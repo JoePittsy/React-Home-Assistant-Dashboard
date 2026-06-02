@@ -26,7 +26,6 @@ function useAnimatedValue(target: number, duration = 600) {
     const from = prevRef.current
     const to = target
     if (from === to) return
-
     const start = performance.now()
     function tick(now: number) {
       const elapsed = now - start
@@ -40,13 +39,12 @@ function useAnimatedValue(target: number, duration = 600) {
       }
     }
     rafRef.current = requestAnimationFrame(tick)
-    return () => {
-      if (rafRef.current) cancelAnimationFrame(rafRef.current)
-    }
+    return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current) }
   }, [target, duration])
 
   return display
 }
+
 
 export function SensorCard({ config }: Props) {
   const entity = useHAStore((s) => s.entities[config.entity])
@@ -58,46 +56,85 @@ export function SensorCard({ config }: Props) {
   const displayValue = isNumeric ? animatedValue.toFixed(decimals) : raw
   const Icon = getIcon(config.icon)
 
-  const valueFontClass =
-    displayValue.length <= 6
-      ? 'text-4xl leading-none'
-      : displayValue.length <= 12
-        ? 'text-2xl leading-tight'
-        : 'text-lg leading-snug'
-
   return (
-    <div className="flex flex-col gap-2 min-w-0">
-      <div className="flex items-center gap-2">
-        <Icon size={14} className="text-muted-foreground flex-shrink-0" />
-        <span className="font-heading text-xs font-medium uppercase tracking-wider text-muted-foreground truncate">
+    <div className="flex flex-col h-full min-w-0" style={{ gap: '8px' }}>
+      {/* Header row */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+        <Icon size={12} style={{ color: '#f5a623', opacity: 0.7, flexShrink: 0 }} />
+        <span style={{ fontSize: '0.6rem', letterSpacing: '0.1em', color: '#b0a898', fontWeight: 500, textTransform: 'uppercase', fontFamily: "'DM Sans', sans-serif" }}>
           {config.name ?? config.entity}
         </span>
       </div>
 
+      {/* Value — hero content */}
       <AnimatePresence mode="wait">
-        <motion.div
-          key={raw}
-          initial={{ scale: 0.97, opacity: 0.7 }}
-          animate={{ scale: [1, 1.04, 1], opacity: 1 }}
-          transition={{ duration: 0.4, times: [0, 0.3, 1] }}
-          className="flex items-baseline gap-1.5 flex-wrap"
-        >
-          <span className={`font-value font-medium text-amber-400 line-clamp-2 ${valueFontClass}`}>
-            {displayValue}
-          </span>
-          {config.unit && (
-            <span className="font-value text-sm text-muted-foreground leading-none">
-              {config.unit}
+        {isNumeric ? (
+          <motion.div
+            key={`num-${Math.round(numericValue * 10)}`}
+            initial={{ scale: 0.97, opacity: 0.7 }}
+            animate={{ scale: [1, 1.03, 1], opacity: 1 }}
+            transition={{ duration: 0.35, times: [0, 0.3, 1] }}
+            style={{ display: 'flex', alignItems: 'baseline', gap: '3px' }}
+          >
+            <span
+              className="font-value font-medium"
+              style={{ color: '#1a1714', fontSize: 'clamp(2rem, 3.5vw, 2.8rem)', lineHeight: 1 }}
+            >
+              {displayValue}
             </span>
-          )}
-        </motion.div>
+            {config.unit && (
+              <span
+                className="font-body"
+                style={{ color: '#a09890', fontSize: '1rem', fontWeight: 400, lineHeight: 1 }}
+              >
+                {config.unit}
+              </span>
+            )}
+          </motion.div>
+        ) : (
+          <motion.div
+            key={`str-${raw}`}
+            initial={{ opacity: 0.7 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.25 }}
+            style={{ display: 'flex', alignItems: 'baseline', gap: '3px' }}
+          >
+            <span
+              className="font-heading line-clamp-2"
+              style={{
+                color: '#1a1714',
+                fontSize: '1.5rem',
+                fontWeight: 600,
+                lineHeight: 1.2,
+                letterSpacing: '-0.01em',
+              }}
+            >
+              {displayValue}
+            </span>
+            {config.unit && (
+              <span
+                className="font-body"
+                style={{ color: '#a09890', fontSize: '1rem', fontWeight: 400, lineHeight: 1 }}
+              >
+                {config.unit}
+              </span>
+            )}
+          </motion.div>
+        )}
       </AnimatePresence>
 
-      {entity?.attributes && (typeof (entity.attributes as Record<string, unknown>).friendly_name === 'string') && (
-        <span className="text-[10px] text-muted-foreground/50 font-body truncate">
-          {String((entity.attributes as Record<string, unknown>).friendly_name)}
-        </span>
-      )}
+      {/* Bottom label — HA friendly_name, only when different from card name */}
+      {(() => {
+        const friendlyName = entity?.attributes && (entity.attributes as Record<string, unknown>).friendly_name as string | undefined
+        return friendlyName && friendlyName !== config.name ? (
+          <span
+            className="font-body truncate"
+            style={{ fontSize: '0.72rem', color: '#9a9088', marginTop: 'auto', letterSpacing: '0.01em' }}
+          >
+            {friendlyName}
+          </span>
+        ) : <span style={{ marginTop: 'auto' }} />
+      })()}
     </div>
   )
 }

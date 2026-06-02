@@ -27,63 +27,104 @@ export function Sidebar() {
 
   return (
     <>
-      {/* Desktop sidebar */}
-      <aside className="hidden md:flex w-[220px] flex-shrink-0 flex-col card-glass border-r border-r-border/60 h-screen sticky top-0 z-40">
-        <div className="px-6 py-7 border-b border-border/40">
-          <h1 className="font-heading text-lg font-semibold tracking-wider text-foreground">
+      {/* Desktop sidebar — stays dark */}
+      <aside
+        className="hidden md:flex w-[220px] flex-shrink-0 flex-col h-screen sticky top-0 z-40"
+        style={{ background: '#1a1917', borderRight: '1px solid #2d2a26' }}
+      >
+        {/* Amber top rule */}
+        <div style={{ height: '1px', background: '#f5a623', width: '100%' }} />
+
+        <div className="px-6 py-6" style={{ borderBottom: '1px solid #2d2a26' }}>
+          <h1
+            className="font-heading font-semibold tracking-[0.08em] uppercase"
+            style={{ color: '#ffffff', fontSize: '1.1rem' }}
+          >
             {config.dashboard.title}
           </h1>
-          <p className="text-xs text-muted-foreground mt-0.5 font-body">Dashboard</p>
+          <div className="flex items-center gap-2 mt-1.5">
+            <span
+              className="w-1.5 h-1.5 rounded-full flex-shrink-0 animate-pulse"
+              style={{ backgroundColor: '#f5a623' }}
+            />
+            <span
+              className="font-body uppercase tracking-widest"
+              style={{ fontSize: '10px', color: 'rgba(245,166,35,0.7)' }}
+            >
+              Live
+            </span>
+          </div>
         </div>
 
-        <nav className="flex-1 py-4 px-3 flex flex-col gap-1 overflow-y-auto">
+        <nav className="flex-1 py-4 px-3 flex flex-col gap-0.5 overflow-y-auto">
           {navItems.map(({ page, i, Icon, isActive }) => (
             <motion.button
               key={i}
               onClick={() => setActivePage(i)}
-              whileHover={{ x: 2 }}
               transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-              className={cn(
-                'flex items-center gap-3 px-3 py-2.5 rounded-md text-left w-full',
-                'transition-colors duration-150 text-sm font-body relative',
-                isActive
-                  ? 'text-foreground bg-white/5'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-white/[0.03]',
-              )}
+              className="flex items-center gap-3 px-3 py-2.5 rounded-md text-left w-full relative transition-all duration-150 text-sm font-body"
+              style={{
+                color: isActive ? '#ffffff' : '#8a8278',
+                background: isActive ? '#221f16' : 'transparent',
+              }}
+              onMouseEnter={(e) => {
+                if (!isActive) {
+                  (e.currentTarget as HTMLButtonElement).style.background = '#252219'
+                  ;(e.currentTarget as HTMLButtonElement).style.color = '#e8e0d4'
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isActive) {
+                  (e.currentTarget as HTMLButtonElement).style.background = 'transparent'
+                  ;(e.currentTarget as HTMLButtonElement).style.color = '#8a8278'
+                }
+              }}
             >
               {isActive && (
                 <motion.span
                   layoutId="active-indicator"
-                  className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-6 rounded-r-full bg-primary"
+                  className="absolute left-0 top-1/2 -translate-y-1/2 rounded-r-full"
+                  style={{ width: '3px', height: '24px', background: '#f5a623' }}
                 />
               )}
               <Icon
                 size={16}
-                className={cn('flex-shrink-0', isActive ? 'text-primary' : 'text-muted-foreground')}
+                className="flex-shrink-0"
+                style={{ color: isActive ? '#f5a623' : 'inherit' }}
               />
               <span className="truncate">{page.name}</span>
             </motion.button>
           ))}
         </nav>
 
-        <div className="px-6 py-4 border-t border-border/40">
-          <p className="text-[10px] text-muted-foreground/50 font-body">Home Assistant</p>
+        <div className="px-6 py-4" style={{ borderTop: '1px solid #2d2a26' }}>
+          <p
+            className="font-body uppercase tracking-[0.1em]"
+            style={{ fontSize: '10px', color: '#4a4540' }}
+          >
+            Home Assistant
+          </p>
         </div>
       </aside>
 
       {/* Mobile bottom tab bar */}
-      <nav className="flex md:hidden fixed bottom-0 left-0 right-0 z-50 card-glass border-t border-border/60 h-16">
+      <nav
+        className="flex md:hidden fixed bottom-0 left-0 right-0 z-50 h-16"
+        style={{ background: '#1a1917', borderTop: '1px solid #2d2a26' }}
+      >
         {navItems.map(({ page, i, Icon, isActive }) => (
           <button
             key={i}
             onClick={() => setActivePage(i)}
             className={cn(
               'flex-1 flex flex-col items-center justify-center gap-1 transition-colors',
-              isActive ? 'text-primary' : 'text-muted-foreground',
             )}
+            style={{ color: isActive ? '#f5a623' : '#8a8278' }}
           >
             <Icon size={18} />
-            <span className="text-[10px] font-body truncate px-1">{page.name}</span>
+            <span className="font-body truncate px-1" style={{ fontSize: '10px' }}>
+              {page.name}
+            </span>
           </button>
         ))}
       </nav>

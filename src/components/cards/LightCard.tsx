@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from 'react'
-import { motion } from 'framer-motion'
 import { Sun } from 'lucide-react'
 import { Switch } from '@/components/ui/switch'
 import { Slider } from '@/components/ui/slider'
@@ -42,60 +41,61 @@ export function LightCard({ config }: Props) {
   }
 
   return (
-    <motion.div
-      animate={{
-        backgroundColor: isOn ? 'rgba(245,166,35,0.05)' : 'rgba(0,0,0,0)',
-        boxShadow: isOn
-          ? '0 0 40px rgba(245,166,35,0.10), inset 0 0 0 1px rgba(245,166,35,0.12)'
-          : '0 0 0 rgba(0,0,0,0), inset 0 0 0 1px transparent',
-      }}
-      transition={{ duration: 0.4 }}
-      className="rounded-md -m-px p-px"
-    >
-      <div className="flex flex-col gap-3">
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex items-center gap-2 min-w-0">
-            <Sun
-              size={14}
-              className="flex-shrink-0"
-              style={{ color: isOn ? '#f5a623' : '#4a5568' }}
-            />
-            <span className="font-heading text-xs font-medium uppercase tracking-wider text-muted-foreground truncate">
-              {config.name ?? config.entity}
+    <div className="flex flex-col h-full" style={{ gap: '8px' }}>
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+        <Sun size={12} style={{ color: '#f5a623', opacity: 0.7, flexShrink: 0 }} />
+        <span style={{ fontSize: '0.6rem', letterSpacing: '0.1em', color: '#b0a898', fontWeight: 500, textTransform: 'uppercase', fontFamily: "'DM Sans', sans-serif" }}>
+          {config.name ?? config.entity}
+        </span>
+      </div>
+
+      {/* Brightness value — hero */}
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: '3px', flex: 1 }}>
+        {isOn ? (
+          <>
+            <span
+              className="font-value font-medium"
+              style={{ color: '#1a1714', fontSize: 'clamp(2rem, 3.5vw, 2.8rem)', lineHeight: 1 }}
+            >
+              {localBrightness}
             </span>
-          </div>
-          <Switch
-            checked={isOn}
-            onCheckedChange={handleToggle}
-            aria-label={`Toggle ${config.name ?? config.entity}`}
-          />
-        </div>
-
-        <div className="flex items-baseline gap-1.5">
+            <span
+              className="font-body"
+              style={{ color: '#a09890', fontSize: '1rem', fontWeight: 400, lineHeight: 1 }}
+            >
+              %
+            </span>
+          </>
+        ) : (
           <span
-            className="font-value text-3xl font-medium transition-colors duration-300"
-            style={{ color: isOn ? '#f5a623' : '#4a5568' }}
+            className="font-value font-medium"
+            style={{ color: '#c8c0b8', fontSize: 'clamp(2rem, 3.5vw, 2.8rem)', lineHeight: 1 }}
           >
-            {isOn ? 'On' : 'Off'}
+            —
           </span>
-          {isOn && config.show_brightness && (
-            <span className="font-value text-sm text-muted-foreground">{localBrightness}%</span>
-          )}
-        </div>
-
-        {config.show_brightness && isOn && (
-          <div className="pt-1">
-            <Slider
-              min={1}
-              max={100}
-              step={1}
-              value={[localBrightness]}
-              onValueChange={handleBrightnessChange}
-              className="w-full"
-            />
-          </div>
         )}
       </div>
-    </motion.div>
+
+      {/* Bottom row: slider + toggle */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: 'auto' }}>
+        {config.show_brightness && isOn ? (
+          <div style={{ flex: 1 }}>
+            <Slider
+              min={1} max={100} step={1}
+              value={[localBrightness]}
+              onValueChange={handleBrightnessChange}
+            />
+          </div>
+        ) : (
+          <div style={{ flex: 1 }} />
+        )}
+        <Switch
+          checked={isOn}
+          onCheckedChange={handleToggle}
+          aria-label={`Toggle ${config.name ?? config.entity}`}
+        />
+      </div>
+    </div>
   )
 }

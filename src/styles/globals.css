@@ -1,7 +1,5 @@
 @import "tailwindcss";
 
-@custom-variant dark (&:is(.dark *));
-
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -15,7 +13,7 @@
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
+  --color-accent: var(--accent-color);
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
   --color-border: var(--border);
@@ -28,51 +26,42 @@
   --font-mono: var(--font-mono);
 }
 
-/* Light theme (fallback / not used in this app) */
 :root {
-  --radius: 0.5rem;
+  --radius: 0.625rem;
   --font-sans: 'DM Sans', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-}
 
-/* Dashboard dark theme — always active via <html class="dark"> */
-.dark {
-  --background: #0d0d0f;
-  --foreground: rgba(240, 230, 215, 0.92);
-  --card: rgba(255, 255, 255, 0.035);
-  --card-foreground: rgba(240, 230, 215, 0.92);
-  --popover: #1a1a1e;
-  --popover-foreground: rgba(240, 230, 215, 0.92);
+  /* Dashboard palette */
+  --bg-page: #f2ede6;
+  --bg-card: #ffffff;
+  --bg-card-hover: #fffdf9;
+  --bg-card-active: #fffbf0;
+  --text-primary: #1a1714;
+  --text-secondary: #6b6560;
+  --text-label: #a09890;
+  --status-on: #f5a623;
+  --status-off: #c8c0b8;
+  --person-home: #2a8a82;
+
+  /* shadcn component compat */
+  --background: #f2ede6;
+  --foreground: #1a1714;
+  --card: #ffffff;
+  --card-foreground: #1a1714;
+  --popover: #ffffff;
+  --popover-foreground: #1a1714;
   --primary: #f5a623;
-  --primary-foreground: #0d0d0f;
-  --secondary: rgba(255, 255, 255, 0.06);
-  --secondary-foreground: rgba(240, 230, 215, 0.92);
-  --muted: rgba(255, 255, 255, 0.06);
-  --muted-foreground: rgba(180, 170, 155, 0.7);
-  --accent: #f5a623;
-  --accent-foreground: #0d0d0f;
-  --destructive: #ef4444;
-  --border: rgba(255, 210, 140, 0.08);
-  --input: rgba(255, 255, 255, 0.08);
-  --ring: rgba(245, 166, 35, 0.4);
+  --primary-foreground: #1a1714;
+  --secondary: #f0ebe4;
+  --secondary-foreground: #1a1714;
+  --muted: #f0ebe4;
+  --muted-foreground: #a09890;
+  --accent-color: #f5a623;
+  --accent-foreground: #1a1714;
+  --destructive: #e53e3e;
+  --border: rgba(0, 0, 0, 0.09);
+  --input: rgba(0, 0, 0, 0.1);
+  --ring: rgba(245, 166, 35, 0.5);
 }
 
 @layer base {
@@ -82,12 +71,13 @@
   }
 
   html {
-    background-color: #0d0d0f;
+    background-color: var(--bg-page);
   }
 
   body {
-    background-color: var(--background);
-    color: var(--foreground);
+    background-color: var(--bg-page);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23noise)' opacity='0.025'/%3E%3C/svg%3E");
+    color: var(--text-primary);
     font-family: 'DM Sans', sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -97,19 +87,16 @@
 }
 
 @layer utilities {
+  /* Used by ConnectionBadge and error modal — stays dark */
   .card-glass {
-    background: var(--card);
-    border: 1px solid var(--border);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    background: #1a1917;
+    border: 1px solid #2d2a26;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
   }
 
-  .bg-dashboard {
-    background-color: #0d0d0f;
-    background-image:
-      radial-gradient(ellipse 120% 60% at 50% -5%, rgba(245, 166, 35, 0.04) 0%, transparent 65%),
-      radial-gradient(ellipse 60% 80% at 100% 50%, rgba(245, 166, 35, 0.02) 0%, transparent 60%),
-      radial-gradient(ellipse 60% 80% at 0% 50%, rgba(100, 90, 180, 0.02) 0%, transparent 60%);
+  .bg-page {
+    background-color: var(--bg-page);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23noise)' opacity='0.025'/%3E%3C/svg%3E");
   }
 
   .font-heading {
@@ -124,23 +111,36 @@
     font-family: 'DM Sans', sans-serif;
   }
 
-  .text-amber {
-    color: #f5a623;
-  }
-
   .shimmer {
     background: linear-gradient(
       90deg,
-      rgba(255, 255, 255, 0.03) 0%,
-      rgba(255, 255, 255, 0.08) 50%,
-      rgba(255, 255, 255, 0.03) 100%
+      rgba(0, 0, 0, 0.04) 0%,
+      rgba(0, 0, 0, 0.09) 50%,
+      rgba(0, 0, 0, 0.04) 100%
     );
     background-size: 200% 100%;
     animation: shimmer 1.8s infinite;
   }
 
   @keyframes shimmer {
-    0% { background-position: -200% 0; }
-    100% { background-position: 200% 0; }
+    0%   { background-position: -200% 0; }
+    100% { background-position:  200% 0; }
   }
+
+  @keyframes weather-rain {
+    0%, 100% { transform: translateY(0px); }
+    50%       { transform: translateY(4px); }
+  }
+  @keyframes weather-sun {
+    0%   { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  @keyframes weather-snow {
+    0%, 100% { transform: translateY(0px) translateX(0px); }
+    33%       { transform: translateY(3px) translateX(2px); }
+    66%       { transform: translateY(2px) translateX(-1px); }
+  }
+  .anim-rain  { animation: weather-rain 2s ease-in-out infinite; }
+  .anim-sun   { animation: weather-sun 12s linear infinite; }
+  .anim-snow  { animation: weather-snow 3s ease-in-out infinite; }
 }
