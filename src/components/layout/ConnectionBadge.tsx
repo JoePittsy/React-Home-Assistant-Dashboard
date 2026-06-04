@@ -8,13 +8,13 @@ const statusConfig = {
   error:        { dotColor: '#e53e3e', label: 'Error',          pulse: true  },
 } as const
 
-export function ConnectionBadge() {
+export function ConnectionBadge({ className = '' }: { className?: string }) {
   const status = useHAStore((s) => s.connectionStatus)
   const cfg = statusConfig[status]
 
   return (
     <div
-      className="fixed bottom-6 right-6 z-50 flex items-center gap-2 select-none font-body"
+      className={`fixed bottom-6 right-6 z-50 flex items-center gap-2 select-none font-body ${className}`}
       style={{
         background: '#1a1917',
         border: '1px solid #2d2a26',

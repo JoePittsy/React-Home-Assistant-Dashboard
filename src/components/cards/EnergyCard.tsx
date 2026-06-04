@@ -65,17 +65,17 @@ function SectionLabel({ text }: { text: string }) {
   )
 }
 
-function CostBlock({ cost, usage }: { cost: number | null; usage: number | null }) {
+function CostBlock({ cost, usage, small }: { cost: number | null; usage: number | null; small?: boolean }) {
   return (
     <div>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: '2px' }}>
-        <span className="font-body" style={{ fontSize: '1.2rem', color: '#a09890' }}>£</span>
-        <span className="font-value" style={{ fontSize: '2rem', fontWeight: 600, color: '#1a1714', lineHeight: 1 }}>
+        <span className="font-body" style={{ fontSize: small ? '0.9rem' : '1.2rem', color: '#a09890' }}>£</span>
+        <span className="font-value" style={{ fontSize: small ? '1.5rem' : '2rem', fontWeight: 600, color: '#1a1714', lineHeight: 1 }}>
           {cost != null ? cost.toFixed(2) : '—'}
         </span>
       </div>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginTop: '4px' }}>
-        <span className="font-value" style={{ fontSize: '1rem', color: '#6b6560' }}>
+        <span className="font-value" style={{ fontSize: small ? '0.78rem' : '1rem', color: '#6b6560' }}>
           {usage != null ? usage.toFixed(2) : '—'}
         </span>
         <span className="font-body" style={{ fontSize: '0.75rem', color: '#a09890' }}>kWh</span>
@@ -84,9 +84,20 @@ function CostBlock({ cost, usage }: { cost: number | null; usage: number | null 
   )
 }
 
+function useIsMobile() {
+  const [mobile, setMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 640)
+  useEffect(() => {
+    const h = () => setMobile(window.innerWidth < 640)
+    window.addEventListener('resize', h, { passive: true })
+    return () => window.removeEventListener('resize', h)
+  }, [])
+  return mobile
+}
+
 export function EnergyCard({ config }: Props) {
   const e = config.entities
   const isElec = !!e.power_now
+  const isMobile = useIsMobile()
   const connected = useHAStore((s) => s.connectionStatus === 'connected')
 
   const powerEntity   = useHAStore((s) => e.power_now  ? s.entities[e.power_now]  : undefined)
@@ -189,33 +200,33 @@ export function EnergyCard({ config }: Props) {
         )}
       </div>
 
-      {/* Body — columns */}
+      {/* Body — always horizontal, smaller fonts on mobile */}
       <div style={{ display: 'flex', flex: 1 }}>
 
         {/* Column 1 — LIVE (electricity only) */}
         {isElec && (
-          <div style={{ flex: 1, paddingRight: '20px', borderRight: '1px solid rgba(0,0,0,0.07)' }}>
+          <div style={{ flex: 1, paddingRight: isMobile ? '12px' : '20px', borderRight: '1px solid rgba(0,0,0,0.07)' }}>
             <SectionLabel text="Live" />
             <motion.div
               animate={{ scale: pulse ? 1.04 : 1, color: powerNow != null ? powerColor(powerNow) : '#a09890' }}
               transition={{ duration: 0.15, ease: 'easeOut' }}
-              style={{ display: 'flex', alignItems: 'baseline', gap: '3px' }}
+              style={{ display: 'flex', alignItems: 'baseline', gap: '2px' }}
             >
-              <span className="font-value" style={{ fontSize: '2.8rem', fontWeight: 600, lineHeight: 1 }}>
+              <span className="font-value" style={{ fontSize: isMobile ? '1.8rem' : '2.8rem', fontWeight: 600, lineHeight: 1 }}>
                 {powerDisplay}
               </span>
-              <span className="font-body" style={{ fontSize: '1rem', color: '#a09890' }}>
+              <span className="font-body" style={{ fontSize: isMobile ? '0.8rem' : '1rem', color: '#a09890' }}>
                 {powerUnit}
               </span>
             </motion.div>
 
             {rateVal != null && (
-              <div style={{ marginTop: '10px' }}>
+              <div style={{ marginTop: isMobile ? '6px' : '10px' }}>
                 <div className="font-body" style={{ fontSize: '0.55rem', letterSpacing: '0.1em', color: '#c0b8b0', textTransform: 'uppercase', marginBottom: '2px' }}>
-                  Unit Rate
+                  Rate
                 </div>
-                <span className="font-value" style={{ fontSize: '0.8rem', color: '#6b6560' }}>
-                  {(rateVal * 100).toFixed(2)}p /kWh
+                <span className="font-value" style={{ fontSize: '0.75rem', color: '#6b6560' }}>
+                  {(rateVal * 100).toFixed(2)}p
                 </span>
               </div>
             )}
@@ -225,14 +236,14 @@ export function EnergyCard({ config }: Props) {
         {/* Column 2 — TODAY */}
         <div style={{
           flex: 1,
-          padding: isElec ? '0 20px' : '0 20px 0 0',
+          padding: isElec ? `0 ${isMobile ? '12px' : '20px'}` : `0 ${isMobile ? '12px' : '20px'} 0 0`,
           borderRight: '1px solid rgba(0,0,0,0.07)',
         }}>
           <SectionLabel text="Today" />
-          <CostBlock cost={costToday} usage={usageToday} />
+          <CostBlock cost={costToday} usage={usageToday} small={isMobile} />
           {!isElec && rateVal != null && (
-            <div style={{ marginTop: '8px' }}>
-              <span className="font-value" style={{ fontSize: '0.8rem', color: '#6b6560' }}>
+            <div style={{ marginTop: '6px' }}>
+              <span className="font-value" style={{ fontSize: '0.75rem', color: '#6b6560' }}>
                 {(rateVal * 100).toFixed(2)}p /kWh
               </span>
             </div>
@@ -240,9 +251,9 @@ export function EnergyCard({ config }: Props) {
         </div>
 
         {/* Column 3 — YESTERDAY */}
-        <div style={{ flex: 1, paddingLeft: '20px' }}>
+        <div style={{ flex: 1, paddingLeft: isMobile ? '12px' : '20px' }}>
           <SectionLabel text="Yesterday" />
-          <CostBlock cost={costYest} usage={usageYest} />
+          <CostBlock cost={costYest} usage={usageYest} small={isMobile} />
           <DeltaRow today={costToday} yesterday={costYest} />
         </div>
       </div>

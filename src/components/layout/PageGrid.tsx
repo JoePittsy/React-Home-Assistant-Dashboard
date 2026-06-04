@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useHAStore } from '@/store/useHAStore'
 import { CardWrapper } from '@/components/cards/CardWrapper'
@@ -81,8 +82,32 @@ function SkeletonCard() {
   )
 }
 
+function useResponsiveCols(cols: number): number {
+  const [effective, setEffective] = useState(() => {
+    if (typeof window === 'undefined') return cols
+    const w = window.innerWidth
+    if (w < 640) return Math.min(cols, 2)
+    if (w < 1024) return Math.min(cols, Math.max(cols - 1, 2))
+    return cols
+  })
+
+  useEffect(() => {
+    const calc = () => {
+      const w = window.innerWidth
+      if (w < 640) return Math.min(cols, 2)
+      if (w < 1024) return Math.min(cols, Math.max(cols - 1, 2))
+      return cols
+    }
+    const handler = () => setEffective(calc())
+    window.addEventListener('resize', handler, { passive: true })
+    return () => window.removeEventListener('resize', handler)
+  }, [cols])
+
+  return effective
+}
+
 const gridStyle = (cols: number) => ({
-  gridTemplateColumns: `repeat(${cols}, minmax(200px, 1fr))`,
+  gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
   gridAutoRows: 'minmax(120px, auto)',
   gap: '16px',
   alignItems: 'start' as const,
@@ -99,6 +124,7 @@ export function PageGrid() {
   if (!page) return null
 
   const cols = page.columns ?? 3
+  const effectiveCols = useResponsiveCols(cols)
   const isLoading = connectionStatus === 'connecting' || connectionStatus === 'idle'
 
   return (
@@ -115,7 +141,7 @@ export function PageGrid() {
 
       <AnimatePresence mode="wait">
         {isLoading ? (
-          <div key="skeleton" style={gridStyle(cols)} className="grid">
+          <div key="skeleton" style={gridStyle(effectiveCols)} className="grid">
             {page.cards.map((_, i) => (
               <SkeletonCard key={i} />
             ))}
@@ -126,11 +152,12 @@ export function PageGrid() {
             variants={container}
             initial="hidden"
             animate="show"
-            style={gridStyle(cols)}
+            style={gridStyle(effectiveCols)}
             className="grid"
           >
             {page.cards.map((card, i) => {
               const span = cardSpan(card)
+              const clampedSpan = span ? Math.min(span, effectiveCols) : undefined
               const inner = renderCard(card)
               const wrapped =
                 card.type === 'car' || card.type === 'energy' ||
@@ -144,7 +171,7 @@ export function PageGrid() {
                   key={`${card.type}-${i}`}
                   variants={item}
                   className="h-full"
-                  style={span ? { gridColumn: `span ${span}` } : undefined}
+                  style={clampedSpan ? { gridColumn: `span ${clampedSpan}` } : undefined}
                 >
                   {wrapped}
                 </motion.div>

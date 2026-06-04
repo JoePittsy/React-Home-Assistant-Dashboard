@@ -109,7 +109,7 @@ export default function App() {
       <main className="bg-page flex-1 overflow-y-auto pb-20 md:pb-0">
         <PageGrid />
       </main>
-      <ConnectionBadge />
+      <ConnectionBadge className="hidden md:flex" />
     </div>
   )
 }
