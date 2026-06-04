@@ -140,6 +140,15 @@ export interface MediaCardConfig {
   entities: MediaEntityMap
 }
 
+export interface EnergyChartCardConfig {
+  type: 'energy_chart'
+  name?: string
+  size?: number
+  entity: string
+  days?: number
+  unit?: string
+}
+
 export type CardConfig =
   | LightCardConfig
   | SwitchCardConfig
@@ -153,6 +162,7 @@ export type CardConfig =
   | ServerCardConfig
   | ScriptCardConfig
   | MediaCardConfig
+  | EnergyChartCardConfig
 
 export interface PageConfig {
   name: string

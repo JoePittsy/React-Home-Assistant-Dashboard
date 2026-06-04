@@ -26,6 +26,69 @@ export interface HAServiceInterface {
   callScript(entityId: string): Promise<void>
 }
 
+export interface DailyTotal {
+  date: Date
+  total: number
+  isToday: boolean
+}
+
+/**
+ * Fetch N days of daily totals for a cumulative sensor that resets at midnight.
+ * Makes a single WebSocket history request, then splits the series at each
+ * midnight reset to extract each day's accumulated total.
+ */
+export async function fetchDailyHistory(
+  entityId: string,
+  days: number,
+): Promise<DailyTotal[]> {
+  if (!connection) return []
+
+  const end = new Date()
+  const start = new Date(end.getTime() - (days + 1) * 25 * 60 * 60 * 1000)
+
+  try {
+    const result = await connection.sendMessagePromise<Record<string, Array<{ s: string }>>>({
+      type: 'history/history_during_period',
+      start_time: start.toISOString(),
+      end_time: end.toISOString(),
+      entity_ids: [entityId],
+      minimal_response: true,
+      no_attributes: true,
+    })
+
+    const series = result?.[entityId]
+    if (!series?.length) return []
+
+    const values = series.map((item) => parseFloat(item.s)).filter((v) => !isNaN(v) && v >= 0)
+    if (values.length < 2) return []
+
+    // Find all midnight resets (largest drops)
+    const resets: number[] = []
+    for (let i = 1; i < values.length; i++) {
+      if (values[i - 1] - values[i] >= 0.05) resets.push(i)
+    }
+
+    // Split into segments; each segment's max = that day's total
+    const boundaries = [0, ...resets, values.length]
+    const segments: number[] = []
+    for (let s = 0; s < boundaries.length - 1; s++) {
+      const seg = values.slice(boundaries[s], boundaries[s + 1])
+      if (seg.length > 0) segments.push(Math.max(...seg))
+    }
+
+    // Keep last `days` segments
+    const kept = segments.slice(-days)
+
+    return kept.map((total, i) => {
+      const d = new Date(end)
+      d.setDate(d.getDate() - (kept.length - 1 - i))
+      return { date: d, total, isToday: i === kept.length - 1 }
+    })
+  } catch {
+    return []
+  }
+}
+
 /**
  * Fetch yesterday's peak value for a cumulative sensor that resets at midnight.
  * Uses the existing WebSocket connection (no CORS issues) via the

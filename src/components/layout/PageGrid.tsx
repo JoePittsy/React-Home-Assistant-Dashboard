@@ -13,6 +13,7 @@ import { WeatherCard } from '@/components/cards/WeatherCard'
 import { ServerCard } from '@/components/cards/ServerCard'
 import { ScriptCard } from '@/components/cards/ScriptCard'
 import { MediaCard } from '@/components/cards/MediaCard'
+import { EnergyChartCard } from '@/components/cards/EnergyChartCard'
 import type { CardConfig } from '@/config/types'
 
 const container = {
@@ -55,6 +56,8 @@ function renderCard(card: CardConfig) {
       return <ScriptCard config={card} />
     case 'media':
       return <MediaCard config={card} />
+    case 'energy_chart':
+      return <EnergyChartCard config={card} />
   }
 }
 
@@ -64,7 +67,8 @@ function cardSpan(card: CardConfig): number | undefined {
   if (card.type === 'energy') return card.size ?? 4
   if (card.type === 'weather') return card.size ?? 2
   if (card.type === 'server') return card.size ?? 4
-  if (card.type === 'media')  return card.size ?? 4
+  if (card.type === 'media')        return card.size ?? 4
+  if (card.type === 'energy_chart') return card.size ?? 4
   return card.size && card.size > 1 ? card.size : undefined
 }
 
@@ -130,7 +134,8 @@ export function PageGrid() {
               const inner = renderCard(card)
               const wrapped =
                 card.type === 'car' || card.type === 'energy' ||
-                card.type === 'server' || card.type === 'media'
+                card.type === 'server' || card.type === 'media' ||
+                card.type === 'energy_chart'
                   ? inner
                   : <CardWrapper entityId={card.entity}>{inner}</CardWrapper>
 
